@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/sclevine/agouti/api"
-	"github.com/sclevine/agouti/api/internal/mocks"
+	. "github.com/reud/agouti/api"
+	"github.com/reud/agouti/api/internal/mocks"
 )
 
 var _ = Describe("Window", func() {

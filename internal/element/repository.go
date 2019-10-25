@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/sclevine/agouti/api"
-	"github.com/sclevine/agouti/internal/target"
+	"github.com/reud/agouti/api"
+	"github.com/reud/agouti/internal/target"
 )
 
 type Repository struct {

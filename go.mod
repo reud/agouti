@@ -1,4 +1,4 @@
-module github.com/sclevine/agouti
+module github.com/reud/agouti
 
 go 1.13
 

@@ -10,10 +10,10 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/sclevine/agouti"
-	"github.com/sclevine/agouti/api"
-	. "github.com/sclevine/agouti/internal/matchers"
-	"github.com/sclevine/agouti/internal/mocks"
+	. "github.com/reud/agouti"
+	"github.com/reud/agouti/api"
+	. "github.com/reud/agouti/internal/matchers"
+	"github.com/reud/agouti/internal/mocks"
 )
 
 var _ = Describe("Page", func() {

@@ -6,9 +6,9 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sclevine/agouti"
-	. "github.com/sclevine/agouti/matchers/internal"
-	"github.com/sclevine/agouti/matchers/internal/mocks"
+	"github.com/reud/agouti"
+	. "github.com/reud/agouti/matchers/internal"
+	"github.com/reud/agouti/matchers/internal/mocks"
 )
 
 var _ = Describe("LogMatcher", func() {

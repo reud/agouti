@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/sclevine/agouti"
+import "github.com/reud/agouti"
 
 type Page struct {
 	TitleCall struct {
