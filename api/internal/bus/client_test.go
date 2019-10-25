@@ -166,4 +166,123 @@ var _ = Describe("Session", func() {
 			})
 		})
 	})
+
+	Describe("#SendAndGetJsonStr", func() {
+		var client *Client
+
+		BeforeEach(func() {
+			client = &Client{
+				SessionURL: server.URL + "/session/some-id",
+				HTTPClient: http.DefaultClient,
+			}
+		})
+
+		It("should make a request with the method and full session endpoint", func() {
+			client.SendAndGetJsonStr("GET", "some/endpoint", nil, nil)
+			Expect(requestPath).To(Equal("/session/some-id/some/endpoint"))
+			Expect(requestMethod).To(Equal("GET"))
+		})
+
+		It("should use the provided HTTP client", func() {
+			var path string
+			client.HTTPClient = &http.Client{Transport: roundTripperFunc(func(request *http.Request) (*http.Response, error) {
+				path = request.URL.Path
+				return nil, errors.New("some error")
+			})}
+			err := client.SendAndGetJsonStr("GET", "some/endpoint", nil, nil)
+			Expect(err).To(MatchError(ContainSubstring("some error")))
+			Expect(path).To(Equal("/session/some-id/some/endpoint"))
+		})
+
+		Context("with a valid request body", func() {
+			It("should make a request with the provided body and application/json content type", func() {
+				body := struct{ SomeValue string }{"some request value"}
+				Expect(client.SendAndGetJsonStr("POST", "some/endpoint", body, nil)).To(Succeed())
+				Expect(requestBody).To(Equal(`{"SomeValue":"some request value"}`))
+				Expect(requestContentType).To(Equal("application/json"))
+			})
+		})
+
+		Context("with an invalid request body", func() {
+			It("should return an invalid request body error", func() {
+				err := client.SendAndGetJsonStr("POST", "some/endpoint", func() {}, nil)
+				Expect(err).To(MatchError("invalid request body: json: unsupported type: func()"))
+			})
+		})
+
+		Context("when the provided body is nil", func() {
+			It("should make a request without a body", func() {
+				Expect(client.SendAndGetJsonStr("POST", "some/endpoint", nil, nil)).To(Succeed())
+				Expect(requestBody).To(BeEmpty())
+			})
+		})
+
+		Context("when the session endpoint is empty", func() {
+			It("should make a request to the session itself", func() {
+				Expect(client.SendAndGetJsonStr("GET", "", nil, nil)).To(Succeed())
+				Expect(requestPath).To(Equal("/session/some-id"))
+			})
+		})
+
+		Context("with an invalid URL", func() {
+			It("should return an invalid request error", func() {
+				client.SessionURL = "%@#$%"
+				err := client.SendAndGetJsonStr("GET", "some/endpoint", nil, nil)
+				Expect(err).To(MatchError(`invalid request: parse %@: invalid URL escape "%@"`))
+			})
+		})
+
+		Context("when the request fails entirely", func() {
+			It("should return an error indicating that the request failed", func() {
+				server.Close()
+				err := client.SendAndGetJsonStr("GET", "some/endpoint", nil, nil)
+				Expect(err.Error()).To(MatchRegexp("request failed: .+ connection refused"))
+			})
+		})
+
+		Context("when the server responds with a non-2xx status code", func() {
+			BeforeEach(func() {
+				responseStatus = 400
+			})
+
+			Context("when the server has a valid error message", func() {
+				It("should return an error from the server indicating that the request failed", func() {
+					responseBody = `{"value": {"message": "{\"errorMessage\": \"some error\"}"}}`
+					err := client.SendAndGetJsonStr("GET", "some/endpoint", nil, nil)
+					Expect(err).To(MatchError("request unsuccessful: some error"))
+				})
+			})
+
+			Context("when the server does not have a valid message", func() {
+				It("should return an error indicating that the request failed with no details", func() {
+					responseBody = `$$$`
+					err := client.SendAndGetJsonStr("GET", "some/endpoint", nil, nil)
+					Expect(err).To(MatchError("request unsuccessful: $$$"))
+				})
+			})
+
+			Context("when the server does not have a valid JSON-encoded error message", func() {
+				It("should return an error with the entire message output", func() {
+					responseBody = `{"value": {"message": "$$$"}}`
+					err := client.SendAndGetJsonStr("GET", "some/endpoint", nil, nil)
+					Expect(err).To(MatchError("request unsuccessful: $$$"))
+				})
+			})
+		})
+
+		Context("when the request succeeds", func() {
+			var result string = ""
+
+			BeforeEach(func() {
+				responseBody = `{"value": {"some": "response value"}}`
+			})
+
+			Context("with a valid response body", func() {
+				It("should successfully get returning text", func() {
+					Expect(client.SendAndGetJsonStr("GET", "some/endpoint", nil, &result)).To(Succeed())
+					Expect(result).To(Equal(`{"value": {"some": "response value"}}`))
+				})
+			})
+		})
+	})
 })

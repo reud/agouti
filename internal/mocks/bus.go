@@ -21,3 +21,13 @@ func (b *Bus) Send(method, endpoint string, body, result interface{}) error {
 	}
 	return b.SendCall.Err
 }
+
+func (b *Bus) SendAndGetJsonStr(method, endpoint string, body interface{}, resultStr *string) error {
+	b.SendCall.Method = method
+	b.SendCall.Endpoint = endpoint
+	b.SendCall.BodyJSON, _ = json.Marshal(body)
+	if resultStr != nil {
+		*resultStr = b.SendCall.Result
+	}
+	return b.SendCall.Err
+}

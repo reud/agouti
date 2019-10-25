@@ -33,6 +33,7 @@ type Element interface {
 	Clear() error
 	Value(text string) error
 	Submit() error
+	SubmitAndCatchResponseAsStr() (string, error)
 	GetLocation() (x, y int, err error)
 }
 

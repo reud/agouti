@@ -27,6 +27,10 @@ func (e *Element) Send(method, endpoint string, body, result interface{}) error 
 	return e.Session.Send(method, path.Join("element", e.ID, endpoint), body, result)
 }
 
+func (e *Element) SendAndGetJsonStr(method, endpoint string, body interface{}, resultStr *string) error {
+	return e.Session.SendAndGetJsonStr(method, path.Join("element", e.ID, endpoint), body, resultStr)
+}
+
 func (e *Element) GetID() string {
 	return e.ID
 }
@@ -130,6 +134,13 @@ func (e *Element) IsEnabled() (bool, error) {
 
 func (e *Element) Submit() error {
 	return e.Send("POST", "submit", nil, nil)
+}
+
+func (e *Element) SubmitAndCatchResponseAsStr() (string, error) {
+	var rs string = ""
+
+	err := e.SendAndGetJsonStr("POST", "submit", nil, &rs)
+	return rs, err
 }
 
 func (e *Element) IsEqualTo(other *Element) (bool, error) {

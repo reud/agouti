@@ -10,6 +10,7 @@ import (
 )
 
 type actionsFunc func(element.Element) error
+type actionsFuncWithStr func(element.Element, *string) error
 
 func (s *Selection) forEachElement(actions actionsFunc) error {
 	elements, err := s.elements.GetAtLeastOne()
@@ -19,6 +20,20 @@ func (s *Selection) forEachElement(actions actionsFunc) error {
 
 	for _, element := range elements {
 		if err := actions(element); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *Selection) forEachElementWithStr(actions actionsFuncWithStr, str *string) error {
+	elements, err := s.elements.GetAtLeastOne()
+	if err != nil {
+		return fmt.Errorf("failed to select elements from %s: %s", s, err)
+	}
+
+	for _, element := range elements {
+		if err := actions(element, str); err != nil {
 			return err
 		}
 	}
@@ -50,12 +65,12 @@ func (s *Selection) DoubleClick() error {
 
 // Clear clears all fields the selection refers to.
 func (s *Selection) Clear() error {
-        return s.forEachElement(func(selectedElement element.Element) error {
-                if err := selectedElement.Clear(); err != nil {
-                        return fmt.Errorf("failed to clear %s: %s", s, err)
-                }
-                return nil
-        })
+	return s.forEachElement(func(selectedElement element.Element) error {
+		if err := selectedElement.Clear(); err != nil {
+			return fmt.Errorf("failed to clear %s: %s", s, err)
+		}
+		return nil
+	})
 }
 
 // Fill fills all of the fields the selection refers to with the provided text.
@@ -169,6 +184,19 @@ func (s *Selection) Submit() error {
 		}
 		return nil
 	})
+}
+
+func (s *Selection) SubmitAndCatchResponseAsStr() (string, error) {
+	var strs string = ""
+	err := s.forEachElementWithStr(func(selectedElement element.Element, stri *string) error {
+		st, err := selectedElement.SubmitAndCatchResponseAsStr()
+		if err != nil {
+			return fmt.Errorf("failed to submit %s: %s", s, err)
+		}
+		*stri += st
+		return nil
+	}, &strs)
+	return strs, err
 }
 
 // Tap performs the provided Tap event on each element in the selection.

@@ -15,6 +15,7 @@ type Session struct {
 
 type Bus interface {
 	Send(method, endpoint string, body, result interface{}) error
+	SendAndGetJsonStr(method, endpoint string, body interface{}, resultStr *string) error
 }
 
 func New(sessionURL string) *Session {

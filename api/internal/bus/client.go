@@ -36,7 +36,7 @@ func (c *Client) Send(method, endpoint string, body interface{}, result interfac
 	return nil
 }
 
-func (c *Client) SendAndCatchJsonStr(method, endpoint string, body interface{}, resultStr *string) error {
+func (c *Client) SendAndGetJsonStr(method, endpoint string, body interface{}, resultStr *string) error {
 	requestBody, err := bodyToJSON(body)
 	if err != nil {
 		return err
@@ -44,7 +44,12 @@ func (c *Client) SendAndCatchJsonStr(method, endpoint string, body interface{}, 
 
 	requestURL := strings.TrimSuffix(c.SessionURL+"/"+endpoint, "/")
 	responseBody, err := c.makeRequest(requestURL, method, requestBody)
-	*resultStr = responseBody
+	if err != nil {
+		return err
+	}
+	if resultStr != nil {
+		*resultStr = string(responseBody)
+	}
 	return nil
 }
 
