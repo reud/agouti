@@ -36,6 +36,18 @@ func (c *Client) Send(method, endpoint string, body interface{}, result interfac
 	return nil
 }
 
+func (c *Client) SendAndCatchJsonStr(method, endpoint string, body interface{}, resultStr *string) error {
+	requestBody, err := bodyToJSON(body)
+	if err != nil {
+		return err
+	}
+
+	requestURL := strings.TrimSuffix(c.SessionURL+"/"+endpoint, "/")
+	responseBody, err := c.makeRequest(requestURL, method, requestBody)
+	*resultStr = responseBody
+	return nil
+}
+
 func bodyToJSON(body interface{}) ([]byte, error) {
 	if body == nil {
 		return nil, nil
